@@ -19,13 +19,14 @@ public:
 
 private:
     void spawnTetromino();
-    bool check();
+    void check(Block& block);
+    bool checkSides();
     void checkLines();
-    //bool checkGameOver();
+    bool checkGameOver(bool movement);
     void resetGame();
     void processEvents();
-    void update();
-    void render();
+    void update(Block& block);
+    void render(Block& block);
     
     sf::RenderWindow window;
     sf::Clock clock;
@@ -39,4 +40,4 @@ private:
     std::array<std::array<int, 4>, 7> figures;
 };
 
-#endif // GAME_HPP
+#endif //GAME_HPP

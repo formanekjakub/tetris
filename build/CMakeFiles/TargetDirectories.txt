@@ -1,0 +1,3 @@
+/Users/jakubformanek/Documents/school/semestr 4/PPC/tetris/build/CMakeFiles/MyGame.dir
+/Users/jakubformanek/Documents/school/semestr 4/PPC/tetris/build/CMakeFiles/edit_cache.dir
+/Users/jakubformanek/Documents/school/semestr 4/PPC/tetris/build/CMakeFiles/rebuild_cache.dir

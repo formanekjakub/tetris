@@ -14,3 +14,11 @@ void Block::setPosition(int x, int y) {
 void Block::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     target.draw(block, states);
 }
+
+bool Block::moving() const{
+    return movement;
+}
+
+void Block::setMovement(bool movement) {
+    this->movement = movement;
+}

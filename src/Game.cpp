@@ -14,6 +14,7 @@ Game::Game()
            {2,3,4,5}}  // O
       })
 {
+    window.setFramerateLimit(60);
     std::srand(static_cast<unsigned int>(std::time(0)));
     std::fill(&field[0][0], &field[0][0] + sizeof(field) / sizeof(field[0][0]), 0);
 
@@ -21,10 +22,11 @@ Game::Game()
 }
 
 void Game::run() {
+    Block tmpBlock;
     while (window.isOpen()) {
         processEvents();
-        if (!gameOver) update();
-        render();
+        if (!gameOver) update(tmpBlock);
+        render(tmpBlock);
     }
 }
 
@@ -32,7 +34,6 @@ void Game::spawnTetromino() {
     int figure = std::rand() % 7;
     //generates random number between 0-6
     //int xOffset = 4;
-
     for (int i = 0; i < 4; ++i) {
         tetromino[i].x = figures[figure][i] % 2 + N / 2 - 1/*+ xOffset*/;
         tetromino[i].y = figures[figure][i] / 2 - 2 ;
@@ -40,13 +41,19 @@ void Game::spawnTetromino() {
     spawning = true;
 }
 
-bool Game::check() {
+void Game::check(Block& block) {
+    for (int i = 0; i < 4; ++i) {
+        if (field[tetromino[i].y][tetromino[i].x]){
+            block.setMovement(false);
+            break;
+        }
+    }
+}
+
+bool Game::checkSides() {
     for (int i = 0; i < 4; ++i) {
         if (tetromino[i].x < 0 || tetromino[i].x >= N) return false;
-        else if (field[tetromino[i].y][tetromino[i].x]) return false;
-        //checks if the field is already occupied
     }
-
     return true;
 }
 //function to chech in there is space where to move the block
@@ -71,9 +78,9 @@ void Game::checkLines() {
 }
 
 
-bool Game::checkGameOver() {
+bool Game::checkGameOver(bool movement) {
     for (int i = 0; i < N; ++i) {
-        if (field[0][i] != 0) return true;
+        if ((field[0][i] != 0) && (movement == false)) return true;
     }
     return false;
 }
@@ -102,15 +109,15 @@ void Game::processEvents() {
                     tetromino[i].x = p.x - x;
                     tetromino[i].y = p.y + y;
                 }
-                if (!check()) tetromino = temp;
+                if (!checkSides()) tetromino = temp;
             } 
             else if (e.key.code == sf::Keyboard::Left) {
                 for (int i = 0; i < 4; ++i) tetromino[i].x -= 1;
-                if (!check()) for (int i = 0; i < 4; ++i) tetromino[i].x += 1;
+                if (!checkSides()) for (int i = 0; i < 4; ++i) tetromino[i].x += 1;
             } 
             else if (e.key.code == sf::Keyboard::Right) {
                 for (int i = 0; i < 4; ++i) tetromino[i].x += 1;
-                if (!check()) for (int i = 0; i < 4; ++i) tetromino[i].x -= 1;
+                if (!checkSides()) for (int i = 0; i < 4; ++i) tetromino[i].x -= 1;
             }
             //moving down faster
             //else if (e.key.code == sf::Keyboard::Down) {
@@ -122,7 +129,7 @@ void Game::processEvents() {
 }
 
 //moving down an checking for colision, if spawnTetromino else moves down
-void Game::update() {
+void Game::update(Block& block) {
     float time = clock.getElapsedTime().asSeconds();
     clock.restart();
     timer += time;
@@ -132,29 +139,32 @@ void Game::update() {
             for (int i = 0; i < 4; ++i) {
                 tetromino[i].y += 1;
             }
-            if (!check()) {
+            check(block);
+            if (!block.moving()) {
                 for (int i = 0; i < 4; ++i) {
                     tetromino[i].y -= 1;
                 }
                 spawning = false; // Tetromino has finished spawning
-                if (checkGameOver()) {
+                if (checkGameOver(block.moving())) {
                     gameOver = true;
                     return;
                 }
             }
-        } else {
+        } 
+        else {
             for (int i = 0; i < 4; ++i) {
                 tetromino[i].y += 1;
             }
-
-            if (!check()) {
+            check(block);
+            if (!block.moving()) {
                 for (int i = 0; i < 4; ++i) {
                     tetromino[i].y -= 1;
                     field[tetromino[i].y][tetromino[i].x] = 1;
                 }
+                block.setMovement(true);
                 spawnTetromino();
                 checkLines();  // Check for full lines after placing a tetromino
-                if (checkGameOver()) {
+                if (checkGameOver(block.moving())) {
                     gameOver = true;
                 }
             }
@@ -166,10 +176,9 @@ void Game::update() {
 
 //add function to delete row and to add score
 
-void Game::render() {
+void Game::render(Block& block) {
     window.clear(sf::Color::Black);
 
-    Block block;
     for (int i = 0; i < (M); ++i)
         for (int j = 0; j < N; ++j) {
             if (field[i][j] == 0) continue;
@@ -196,7 +205,7 @@ void Game::render() {
 
         // Create a basic font for rendering
         sf::Font font;
-        if (!font.loadFromFile("arial.ttf")) {
+        if (!font.loadFromFile("Arial.ttf")) {
             // Handle the error (in case the font is not found)
         }
         gameOverText.setFont(font);
