@@ -15,11 +15,11 @@ void Block::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     target.draw(block, states);
 }
 
-/*
+
 void Block::setColor(sf::Color color) {
     block.setFillColor(color);
 }
-*/
+
 
 bool Block::moving() const{
     return movement;
