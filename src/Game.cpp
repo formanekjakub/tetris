@@ -21,7 +21,7 @@ Game::Game()
 
     spawnTetromino();
 
-    if (!font.loadFromFile("arial.ttf")) {
+    if (!font.loadFromFile("../fonts/Arial.ttf")) {
         // Handle the error (in case the font is not found)
     }
 

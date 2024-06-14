@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(MyGameProject VERSION 1.0)
+project(tetris VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -15,10 +15,10 @@ set(SOURCES
     src/main.cpp
 )
 
-add_executable(MyGame ${SOURCES})
+add_executable(tetris ${SOURCES})
 
-target_link_libraries(MyGame sfml-system sfml-window sfml-graphics sfml-network sfml-audio)
+target_link_libraries(tetris sfml-system sfml-window sfml-graphics sfml-network sfml-audio)
 
-set_target_properties(MyGame PROPERTIES
+set_target_properties(tetris PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
