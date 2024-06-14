@@ -10,6 +10,7 @@ public:
     void setPosition(int x, int y);
     bool moving() const;
     void setMovement(bool movement);
+    void setColor(sf::Color color);
 
 protected:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

@@ -2,9 +2,9 @@
 #include <ctime>
 
 Game::Game()
-    : window(sf::VideoMode(N * BLOCK_SIZE, M * BLOCK_SIZE), "Tetris"),
+    : window(sf::VideoMode((N+5) * BLOCK_SIZE, M * BLOCK_SIZE), "Tetris"),
         //sets up window size
-      timer(0), delay(0.3f), score(0), figures({
+      timer(0), delay(0.3f), score(0), gameOver(false), spawning(false), figures({
           {{1,3,5,7},  // I
            {2,4,5,7},  // Z
            {3,5,4,6},  // S
@@ -17,14 +17,26 @@ Game::Game()
     window.setFramerateLimit(60);
     std::srand(static_cast<unsigned int>(std::time(0)));
     std::fill(&field[0][0], &field[0][0] + sizeof(field) / sizeof(field[0][0]), 0);
+    std::fill(&fieldColors[0][0], &fieldColors[0][0] + sizeof(fieldColors) / sizeof(fieldColors[0][0]), sf::Color::Black);
 
     spawnTetromino();
+
+    if (!font.loadFromFile("arial.ttf")) {
+        // Handle the error (in case the font is not found)
+    }
+
+    scoreText.setFont(font);
+    scoreText.setCharacterSize(24);
+    scoreText.setFillColor(sf::Color::Black);
+    scoreText.setPosition((N + 1) * BLOCK_SIZE, (M * BLOCK_SIZE)/ 2); // Position for the score text
+    updateScoreText(); // Initialize the score text
 }
+
 
 void Game::run() {
     Block tmpBlock;
     while (window.isOpen()) {
-        processEvents();
+        processEvents(tmpBlock);
         if (!gameOver) update(tmpBlock);
         render(tmpBlock);
     }
@@ -34,16 +46,30 @@ void Game::spawnTetromino() {
     int figure = std::rand() % 7;
     //generates random number between 0-6
     //int xOffset = 4;
+    /*
+    sf::Color color;
+    switch (figure) {
+        case 0: color = sf::Color::Cyan; break;   // I
+        case 1: color = sf::Color::Red; break;    // Z
+        case 2: color = sf::Color::Green; break;  // S
+        case 3: color = sf::Color::Magenta; break;// T
+        case 4: color = sf::Color::Blue; break;   // L
+        case 5: color = sf::Color::Yellow; break; // J
+        case 6: color = sf::Color::White; break;  // O
+    }
+    */
+
     for (int i = 0; i < 4; ++i) {
         tetromino[i].x = figures[figure][i] % 2 + N / 2 - 1/*+ xOffset*/;
         tetromino[i].y = figures[figure][i] / 2 - 2 ;
     }
+    //tetrominoColor = color;
     spawning = true;
 }
 
 void Game::check(Block& block) {
     for (int i = 0; i < 4; ++i) {
-        if (field[tetromino[i].y][tetromino[i].x]){
+        if (tetromino[i].y >= M || field[tetromino[i].y][tetromino[i].x]){
             block.setMovement(false);
             break;
         }
@@ -52,8 +78,9 @@ void Game::check(Block& block) {
 
 bool Game::checkSides() {
     for (int i = 0; i < 4; ++i) {
-        if (tetromino[i].x < 0 || tetromino[i].x >= N) return false;
+        if (tetromino[i].y >= M || tetromino[i].x < 0 || tetromino[i].x >= N) return false;
     }
+    
     return true;
 }
 //function to chech in there is space where to move the block
@@ -70,6 +97,10 @@ void Game::checkLines() {
             linesCleared++;
         }
     }
+
+    score += linesCleared;
+    updateScoreText();
+
     for (int i = 0; i < linesCleared; i++) {
         for (int j = 0; j < N; j++) {
             field[i][j] = 0;
@@ -77,10 +108,14 @@ void Game::checkLines() {
     }
 }
 
+void Game::updateScoreText() {
+    scoreText.setString("Score: " + std::to_string(score));
+}
+
 
 bool Game::checkGameOver(bool movement) {
     for (int i = 0; i < N; ++i) {
-        if ((field[0][i] != 0) && (movement == false)) return true;
+        if ((field[0][i] != 0) /*&& (movement == false)*/) return true;
     }
     return false;
 }
@@ -88,11 +123,13 @@ bool Game::checkGameOver(bool movement) {
 void Game::resetGame() {
     std::fill(&field[0][0], &field[0][0] + sizeof(field) / sizeof(field[0][0]), 0);
     gameOver = false;
+    score = 0;
+    updateScoreText();
     spawnTetromino();
     timer = 0;
 }
 
-void Game::processEvents() {
+void Game::processEvents(Block& block) {
     sf::Event e;
     while (window.pollEvent(e)) {
         if (e.type == sf::Event::Closed)
@@ -109,21 +146,23 @@ void Game::processEvents() {
                     tetromino[i].x = p.x - x;
                     tetromino[i].y = p.y + y;
                 }
-                if (!checkSides()) tetromino = temp;
+                if (!checkSides() || !block.moving()) tetromino = temp;
             } 
             else if (e.key.code == sf::Keyboard::Left) {
                 for (int i = 0; i < 4; ++i) tetromino[i].x -= 1;
-                if (!checkSides()) for (int i = 0; i < 4; ++i) tetromino[i].x += 1;
+                if (!checkSides() || !block.moving()) for (int i = 0; i < 4; ++i) tetromino[i].x += 1;
             } 
             else if (e.key.code == sf::Keyboard::Right) {
                 for (int i = 0; i < 4; ++i) tetromino[i].x += 1;
-                if (!checkSides()) for (int i = 0; i < 4; ++i) tetromino[i].x -= 1;
+                if (!checkSides() || !block.moving()) for (int i = 0; i < 4; ++i) tetromino[i].x -= 1;
             }
             //moving down faster
             //else if (e.key.code == sf::Keyboard::Down) {
 
             //}
             else if (e.key.code == sf::Keyboard::R) resetGame();
+            else if (e.key.code == sf::Keyboard::Down) fasterMode = true;
+            
         }
     }
 }
@@ -132,7 +171,10 @@ void Game::processEvents() {
 void Game::update(Block& block) {
     float time = clock.getElapsedTime().asSeconds();
     clock.restart();
-    timer += time;
+    
+    if(fasterMode == true) timer += (4 * time);
+    else timer += time;
+    fasterMode = false;
 
     if (timer > delay) {
         if (spawning) {
@@ -160,6 +202,7 @@ void Game::update(Block& block) {
                 for (int i = 0; i < 4; ++i) {
                     tetromino[i].y -= 1;
                     field[tetromino[i].y][tetromino[i].x] = 1;
+                    //fieldColors[tetromino[i].y][tetromino[i].x] = tetrominoColor;
                 }
                 block.setMovement(true);
                 spawnTetromino();
@@ -177,19 +220,34 @@ void Game::update(Block& block) {
 //add function to delete row and to add score
 
 void Game::render(Block& block) {
-    window.clear(sf::Color::Black);
+    window.clear();
+
+    // Draw the black rectangle for the game area
+    sf::RectangleShape gameArea(sf::Vector2f(N * BLOCK_SIZE, M * BLOCK_SIZE));
+    gameArea.setFillColor(sf::Color::Black);
+    window.draw(gameArea);
+
+    // Draw the white rectangle for the score area
+    sf::RectangleShape scoreArea(sf::Vector2f(5 * BLOCK_SIZE, M * BLOCK_SIZE));
+    scoreArea.setFillColor(sf::Color::White);
+    scoreArea.setPosition(N * BLOCK_SIZE, 0);
+    window.draw(scoreArea);
 
     for (int i = 0; i < (M); ++i)
         for (int j = 0; j < N; ++j) {
             if (field[i][j] == 0) continue;
             block.setPosition(j, i);
+            //block.setColor(fieldColors[i][j]);
             window.draw(block);
         }
 
     for (int i = 0; i < 4; ++i) {
         block.setPosition(tetromino[i].x, tetromino[i].y);
+        //block.setColor(tetrominoColor);
         window.draw(block);
     }
+
+    window.draw(scoreText);
 
     if (gameOver) {
         // Create a rectangle for the game over background

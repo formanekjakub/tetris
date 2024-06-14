@@ -24,12 +24,14 @@ private:
     void checkLines();
     bool checkGameOver(bool movement);
     void resetGame();
-    void processEvents();
+    void processEvents(Block& block);
     void update(Block& block);
     void render(Block& block);
+    void updateScoreText();
     
     sf::RenderWindow window;
     sf::Clock clock;
+    bool fasterMode = false;
     bool spawning;
     bool gameOver;
     int score;
@@ -38,6 +40,10 @@ private:
     std::array<Point, 4> tetromino, temp;
     int field[M][N];
     std::array<std::array<int, 4>, 7> figures;
+    sf::Font font;
+    sf::Text scoreText;
+    sf::Color fieldColors[M][N];
+    sf::Color tetrominoColor;
 };
 
 #endif //GAME_HPP
