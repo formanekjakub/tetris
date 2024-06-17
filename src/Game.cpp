@@ -278,7 +278,7 @@ void Game::render(Block& block) {
 
         // Create a basic font for rendering
         sf::Font font;
-        if (!font.loadFromFile("Arial.ttf")) {
+        if (!font.loadFromFile("../fonts/Arial.ttf")) {
             // Handle the error (in case the font is not found)
         }
         gameOverText.setFont(font);
