@@ -43,8 +43,6 @@ This project is a Tetris game implemented in C++ using the SFML library. Follow 
     make
     ```
 
-    If you are not using CMake, you can compile the project directly using your preferred C++ compiler. Ensure that you link against the SFML libraries.
-
 ## Running the Game
 
 After building the project, you can run the game executable:
