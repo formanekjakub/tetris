@@ -56,18 +56,17 @@ cd bin
 
 ## Game Controls
 
-Up Arrow: Rotate the tetromino.
-Left Arrow: Move the tetromino left.
-Right Arrow: Move the tetromino right.
-Down Arrow: Speed up the tetromino's descent.
-R: Reset the game.
-Esc: Exit the game.
+- Up Arrow: Rotate the tetromino.
+- Left Arrow: Move the tetromino left.
+- Right Arrow: Move the tetromino right.
+- Down Arrow: Speed up the tetromino's descent.
+- R: Reset the game.
 
 ## Project Structure
 
-main.cpp: The entry point of the application.
-Game.hpp and Game.cpp: Contains the Game class which manages the game loop, rendering, and game logic.
-Block.hpp and Block.cpp: Contains the Block class which represents each Tetris block.
-Constants.hpp: Defines game constants such as the size of the game field and block size.
+- main.cpp: The entry point of the application.
+- Game.hpp and Game.cpp: Contains the Game class which manages the game loop, rendering, and game logic.
+- Block.hpp and Block.cpp: Contains the Block class which represents each Tetris block.
+- Constants.hpp: Defines game constants such as the size of the game field and block size.
 
 
